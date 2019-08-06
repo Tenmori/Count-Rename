@@ -17,8 +17,6 @@ MainWindow::~MainWindow()
 void MainWindow::on_pathEdit_textEdited(const QString &arg1)
 {
     MainWindow::path = arg1.toStdString();
-
-    MainWindow::fileList = core->read_directory(MainWindow::path);
 }
 
 void MainWindow::on_nameEdit_textEdited(const QString &arg1)
@@ -31,7 +29,22 @@ void MainWindow::on_countStart_valueChanged(int arg1)
     MainWindow::countStart = arg1;
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::on_actionTypeSelector_currentIndexChanged(int index)
 {
-    core->rename_directory_files(MainWindow::fileList, MainWindow::newNameFormat, MainWindow::path, MainWindow::countStart);
+    actionType = index;
+}
+
+
+void MainWindow::on_go_Button_clicked()
+{
+    MainWindow::fileList = core->read_directory(MainWindow::path);
+    core->rename_directory_files(MainWindow::actionType, MainWindow::fileList, MainWindow::newNameFormat, MainWindow::path, MainWindow::countStart);
+    MainWindow::finishedFileList = MainWindow::fileList;
+    MainWindow::fileList = core->read_directory(MainWindow::path);
+    core->document_changes(finishedFileList, fileList);
+}
+
+void MainWindow::on_undo_Button_clicked()
+{
+    core->rename_directory_files(2, MainWindow::finishedFileList, MainWindow::newNameFormat, MainWindow::path, MainWindow::countStart);
 }

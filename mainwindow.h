@@ -25,14 +25,20 @@ private slots:
 
     void on_countStart_valueChanged(int arg1);
 
-    void on_pushButton_clicked();
+    void on_go_Button_clicked();
+
+    void on_undo_Button_clicked();
+
+    void on_actionTypeSelector_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;
     std::string path;
     std::string newNameFormat;
     int countStart;
+    int actionType = 0;
     pathvec fileList;
+    pathvec finishedFileList;
 };
 
 #endif // MAINWINDOW_H

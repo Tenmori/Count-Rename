@@ -1,5 +1,8 @@
 #include "corefunctions.h"
 #include <sstream>
+#include <ctime>
+#include <fstream>
+
 
 /*
  * Where the magic happens /s
@@ -54,7 +57,7 @@ std::string coreFunctions::choose_directory()
 /*
     Copies all files and renames them into a separate copy folder.
 */
-void coreFunctions::rename_directory_files(pathvec fileList, std::string newName, std::string path, int countStart)
+void coreFunctions::rename_directory_files(int actionType, pathvec fileList, std::string newName, std::string path, int countStart)
 {
     //Used only in console version
     //The digit from which we start the renaming process at.
@@ -64,30 +67,71 @@ void coreFunctions::rename_directory_files(pathvec fileList, std::string newName
     //Location of files being renamed.
     fs::path p(path);
 
-    //Location of wheree copies will be placed.
-    fs::create_directories(p / "Output");
-
     //Maximum number of possible padded zeroes required for padding.
-    int upper_count = countStart + static_cast<int>(fileList.size());
+    int upper_count;
 
+    if (countStart == 0)
+    {
+        upper_count = static_cast<int>(fileList.size());
+    }else
+    {
+        upper_count = countStart + static_cast<int>(fileList.size());
+
+    }
 
     //Used only in console version
     //std::cout << "Enter the number from which your file count begins: ";
     //std::getline(std::cin, startCountInput);
 
-    for (size_t i = 0; i < fileList.size(); i++)
+    switch(actionType)
     {
-        //Current number being appended to renamed files.
-        int cur_count = (countStart + static_cast<int>(i));
+        //Creates a copy of all files in list
+        case 0:
+            //Location of where copies will be placed.
+            fs::create_directories(p / "Output");
 
-        std::string extension = fs::path(fileList.at(i)).extension().u8string();
-        std::string cur_number = std::to_string(cur_count);
-        std::string padding = zeroPad(upper_count, cur_count);
+            for (size_t i = 0; i < fileList.size(); i++)
+            {
+                //Current number being appended to renamed files.
+                int cur_count = (countStart + static_cast<int>(i));
 
-        fs::copy(fileList.at(i), p / "Output" / (newName + " " + padding +cur_number + extension));
+                std::string extension = fs::path(fileList.at(i)).extension().u8string();
+                std::string cur_number = std::to_string(cur_count);
+                std::string padding = zeroPad(upper_count, cur_count);
 
-        //Function offers option to rename source files instead of creating a copy.
-        //rename(fileList.at(i), p / "Output" / (newName + " " + cur_number + extension));
+                fs::copy(fileList.at(i), p / "Output" / (newName + " " + padding + cur_number + extension));
+            }
+        break;
+
+        //Replaces all files in list
+        case 1:
+            for (size_t i = 0; i < fileList.size(); i++)
+            {
+                //Current number being appended to renamed files.
+                int cur_count = (countStart + static_cast<int>(i));
+
+                std::string extension = fs::path(fileList.at(i)).extension().u8string();
+                std::string cur_number = std::to_string(cur_count);
+                std::string padding = zeroPad(upper_count, cur_count);
+
+                fs::rename(fileList.at(i), p / (newName + " " + padding + cur_number + extension));
+            }
+        break;
+
+        //Undoes any changes made
+        case 2:
+            for (size_t i = 0; i < fileList.size(); i++)
+            {
+                //Current number being appended to renamed files.
+                int cur_count = (countStart + static_cast<int>(i));
+
+                std::string extension = fs::path(fileList.at(i)).extension().u8string();
+                std::string cur_number = std::to_string(cur_count);
+                std::string padding = zeroPad(upper_count, cur_count);
+
+                fs::rename(p / (newName + " " + padding + cur_number + extension), fileList.at(i));
+            }
+        break;
     }
 }
 
@@ -134,4 +178,33 @@ std::string coreFunctions::zeroPad(int upper_count, int cur_count)
 
     std::string zeroPad(zero_pad_amount, '0');
     return zeroPad;
+}
+
+/*
+    Records all changes made to files by this program.
+*/
+void coreFunctions::document_changes(pathvec from, pathvec to)
+{
+    fs::path p("changelog");
+    std::ofstream myfile;
+
+    if (!fs::exists(p))
+    {
+        fs::create_directory(p);
+    }
+
+    const int MAXLEN = 20;
+    char s[MAXLEN];
+    time_t t = time(nullptr);
+    strftime(s, MAXLEN, "%Y-%m-%d.txt", localtime(&t));
+    //std::cout << s << '\n';
+
+    myfile.open(p/s, std::ios_base::app);
+
+    for (size_t i = 0; i < from.size(); i++)
+    {
+        myfile << from.at(i) << "->" << to.at(i) << std::endl;
+    }
+
+    myfile.close();
 }
