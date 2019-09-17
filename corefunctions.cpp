@@ -67,6 +67,12 @@ void coreFunctions::rename_directory_files(int actionType, pathvec fileList, std
     //Location of files being renamed.
     fs::path p(path);
 
+    //Check if name is null
+    if (static_cast<int>(newName.size()) > 0)
+    {
+        newName = newName + " ";
+    }
+
     //Maximum number of possible padded zeroes required for padding.
     int upper_count;
 
@@ -99,7 +105,7 @@ void coreFunctions::rename_directory_files(int actionType, pathvec fileList, std
                 std::string cur_number = std::to_string(cur_count);
                 std::string padding = zeroPad(upper_count, cur_count);
 
-                fs::copy(fileList.at(i), p / "Output" / (newName + " " + padding + cur_number + extension));
+                fs::copy(fileList.at(i), p / "Output" / (newName + padding + cur_number + extension));
             }
         break;
 
@@ -114,7 +120,7 @@ void coreFunctions::rename_directory_files(int actionType, pathvec fileList, std
                 std::string cur_number = std::to_string(cur_count);
                 std::string padding = zeroPad(upper_count, cur_count);
 
-                fs::rename(fileList.at(i), p / (newName + " " + padding + cur_number + extension));
+                fs::rename(fileList.at(i), p / (newName + padding + cur_number + extension));
             }
         break;
 
@@ -129,7 +135,7 @@ void coreFunctions::rename_directory_files(int actionType, pathvec fileList, std
                 std::string cur_number = std::to_string(cur_count);
                 std::string padding = zeroPad(upper_count, cur_count);
 
-                fs::rename(p / (newName + " " + padding + cur_number + extension), fileList.at(i));
+                fs::rename(p / (newName + padding + cur_number + extension), fileList.at(i));
             }
         break;
     }
