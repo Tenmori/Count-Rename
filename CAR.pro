@@ -25,12 +25,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        corefunctions.cpp \
+        core.cpp \
         main.cpp \
         mainwindow.cpp
 
 HEADERS += \
-        corefunctions.h \
+        core.h \
         mainwindow.h \
         stdheader.h
 

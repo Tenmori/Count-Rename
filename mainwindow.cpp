@@ -1,9 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QFileDialog>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    core(new coreFunctions()),
+    core(new class core()),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -15,6 +17,11 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::on_pathEdit_textEdited(const QString &arg1)
+{
+    MainWindow::path = arg1.toStdString();
+}
+
+void MainWindow::on_pathEdit_2_textEdited(const QString &arg1)
 {
     MainWindow::path = arg1.toStdString();
 }
@@ -35,16 +42,76 @@ void MainWindow::on_actionTypeSelector_currentIndexChanged(int index)
 }
 
 
-void MainWindow::on_go_Button_clicked()
+void MainWindow::on_goRename_Button_clicked()
 {
     MainWindow::fileList = core->read_directory(MainWindow::path);
-    core->rename_directory_files(MainWindow::actionType, MainWindow::fileList, MainWindow::newNameFormat, MainWindow::path, MainWindow::countStart);
+
+    pathvec placeholder;
+
     MainWindow::finishedFileList = MainWindow::fileList;
-    MainWindow::fileList = core->read_directory(MainWindow::path);
+
+    placeholder = core->rename_directory_files(MainWindow::actionType, MainWindow::fileList, MainWindow::newNameFormat, MainWindow::path, MainWindow::countStart);
+
+    MainWindow::fileList = placeholder;
+
     core->document_changes(finishedFileList, fileList);
+
+    ui->pathEdit->setText("");
+    ui->nameEdit->setText("");
 }
 
 void MainWindow::on_undo_Button_clicked()
 {
-    core->rename_directory_files(2, MainWindow::finishedFileList, MainWindow::newNameFormat, MainWindow::path, MainWindow::countStart);
+    std::cout << finishedFileList.size() << std::endl;
+
+    std::cout << fileList.size() << std::endl;
+
+    for (size_t i = 0; i < fileList.size(); i++)
+    {
+        std::cout << finishedFileList.at(i) << " to " << fileList.at(i) << std::endl;
+    }
+
+    core->undo(MainWindow::finishedFileList, MainWindow::fileList);
+}
+
+void MainWindow::on_searchPath_clicked()
+{
+    QString newPath = QFileDialog::getExistingDirectory(this, "Get Any File");
+    ui->pathEdit->setText(newPath);
+}
+
+void MainWindow::on_searchPath_2_clicked()
+{
+    QString newPath = QFileDialog::getExistingDirectory(this, "Get Any File");
+    ui->pathEdit_2->setText(newPath);
+}
+
+void MainWindow::on_phrase_textEdited(const QString &arg1)
+{
+    MainWindow::phrase = arg1.toStdString();
+}
+
+void MainWindow::on_goRemove_Button_clicked()
+{
+    MainWindow::fileList = core->read_directory(MainWindow::path);
+
+    MainWindow::finishedFileList = MainWindow::fileList;
+
+    if (MainWindow::phrase.size()>1)
+    {
+        MainWindow::fileList = core->cleanUp(MainWindow::fileList, MainWindow::path, true, MainWindow::phrase);
+    }else
+    {
+        MainWindow::fileList = core->cleanUp(MainWindow::fileList, MainWindow::path, false, "NULL");
+    }
+
+    core->document_changes(finishedFileList, fileList);
+
+    ui->pathEdit_2->setText("");
+    ui->phrase->setText("");
+
+}
+void MainWindow::on_undo_Button_2_clicked()
+{
+    core->undo(MainWindow::finishedFileList, MainWindow::fileList);
 }
